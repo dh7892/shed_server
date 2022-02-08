@@ -1,20 +1,35 @@
-from flask import Flask, session, request, jsonify
-app = Flask(__name__)
+from fastapi import FastAPI
+from pydantic import BaseModel
 
-heater_on = False
+app = FastAPI()
 
+HEATER=True
+LIGHT=False
 
-@app.route('/')
-def hello_world():
-    return "Hi, this is Dave's Workshop"
+class Heater(BaseModel):
+    on: bool
 
-@app.route('/heater', methods=["GET", "POST"])
-def heater():
-  global heater_on
-  if request.method == "POST":
-    heater_on = not heater_on
-  return jsonify({"heater": heater_on})
-    
+class Light(BaseModel):
+    on: bool
 
-if __name__ == "__main__":
-  app.run(host='0.0.0.0', port= 8090)
+@app.get("/heater")
+async def heater_get():
+    heater = Heater(on=HEATER)
+    return heater
+
+@app.put("/heater")
+async def heater_put(heater: Heater):
+    global HEATER
+    HEATER = heater.on
+    return heater
+
+@app.get("/light")
+async def light_get():
+    light = Light(on=LIGHT)
+    return light
+
+@app.put("/light")
+async def light_put(light: Light):
+    global LIGHT
+    LIGHT = light.on
+    return light
